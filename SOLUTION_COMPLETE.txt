@@ -1,0 +1,322 @@
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                                                                              ║
+║                  🎯 SOLUTION COMPLÈTE - STADIUMGUARD                         ║
+║                   Frontend-Backend Integration                               ║
+║                                                                              ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+
+📦 CE QUI A ÉTÉ LIVRÉ
+═══════════════════════════════════════════════════════════════════════════════
+
+✅ Serveur API REST Flask (backend/api_server.py)
+   • 6 endpoints REST avec CORS
+   • Cache en mémoire (200ms TTL)
+   • Gestion d'erreurs robuste
+   • Port 5000
+
+✅ Module de connexion frontend (frontend/.../backend.js)
+   • Polling automatique (500ms)
+   • Callbacks pour data/error/connect/disconnect
+   • Gestion de reconnexion
+   • Mode CORS avec fetch()
+
+✅ Intégration dans main.js
+   • Détection automatique backend online/offline
+   • Mise à jour temps réel du DOM
+   • Graphiques interactifs
+   • Journal d'événements
+
+✅ Scripts de lancement
+   • start_backend.bat (Windows)
+   • start_frontend.bat (Windows)
+   • Instructions pour Linux/Mac
+
+✅ Scripts de test
+   • test_api.py (test automatique)
+   • test_endpoints.bat (test manuel)
+   • debug_info.py (diagnostic)
+   • check_setup.py (vérification)
+
+✅ Documentation complète
+   • README.md (vue d'ensemble)
+   • INTEGRATION_GUIDE.md (guide détaillé)
+   • DEMARRAGE_RAPIDE.md (guide express)
+   • FICHIERS_CREES.md (liste des fichiers)
+   • FLUX_DONNEES.txt (diagrammes)
+
+
+🏗️ ARCHITECTURE
+═══════════════════════════════════════════════════════════════════════════════
+
+    ┌─────────────────────────────────────────────────────────────┐
+    │                    FRONTEND (Vite)                          │
+    │                  http://localhost:3101                      │
+    │                                                             │
+    │  • Dashboard avec métriques temps réel                      │
+    │  • Graphiques Chart.js                                      │
+    │  • Journal d'événements                                     │
+    │  • Polling toutes les 500ms                                 │
+    └─────────────────────────┬───────────────────────────────────┘
+                              │
+                              │ HTTP GET (CORS)
+                              │ fetch('http://localhost:5000/api/alert')
+                              │
+                              ↓
+    ┌─────────────────────────────────────────────────────────────┐
+    │                  API SERVER (Flask)                         │
+    │                 http://localhost:5000                       │
+    │                                                             │
+    │  Endpoints:                                                 │
+    │  • GET /api/health   → Status                               │
+    │  • GET /api/alert    → Score fusionné                       │
+    │  • GET /api/person   → Détection personnes                  │
+    │  • GET /api/fall     → Détection chutes                     │
+    │  • GET /api/motion   → Classification mouvement             │
+    │  • GET /api/context  → Contexte match                       │
+    │                                                             │
+    │  Cache: 200ms TTL                                           │
+    │  CORS: Activé pour localhost:3101                           │
+    └─────────────────────────┬───────────────────────────────────┘
+                              │
+                              │ File I/O (lecture JSON)
+                              │ Toutes les 200ms
+                              │
+                              ↓
+    ┌─────────────────────────────────────────────────────────────┐
+    │                    OUTPUT DIRECTORY                         │
+    │                                                             │
+    │  • person_score.json   (Lab1)                               │
+    │  • fall_score.json     (Lab2)                               │
+    │  • motion_score.json   (Lab3)                               │
+    │  • match_context.json  (Simulator)                          │
+    │  • final_alert.json    (Orchestrator)                       │
+    └─────────────────────────┬───────────────────────────────────┘
+                              │
+                              │ Écriture JSON
+                              │ Toutes les 0.5s
+                              │
+                              ↑
+    ┌─────────────────────────────────────────────────────────────┐
+    │                  BACKEND PYTHON                             │
+    │                                                             │
+    │  • camera_server.py    → Capture + Labs 1-3                 │
+    │  • orchestrator.py     → Fusion des scores                  │
+    │  • match_context_simulator.py → Contexte match              │
+    └─────────────────────────────────────────────────────────────┘
+
+
+🚀 DÉMARRAGE EN 3 ÉTAPES
+═══════════════════════════════════════════════════════════════════════════════
+
+ÉTAPE 1: Installation (une seule fois)
+───────────────────────────────────────
+  pip install -r backend/requirements.txt
+  cd frontend && npm install
+
+ÉTAPE 2: Lancement (3 terminaux)
+─────────────────────────────────
+  Terminal 1: python backend/orchestrator.py
+  Terminal 2: python backend/api_server.py
+  Terminal 3: cd frontend && npm run dev
+
+ÉTAPE 3: Utilisation
+────────────────────
+  1. Ouvrir http://localhost:3101
+  2. Cliquer "Connect Backend"
+  3. Les métriques se mettent à jour en temps réel
+
+
+🎮 UTILISATION
+═══════════════════════════════════════════════════════════════════════════════
+
+MODE BACKEND RÉEL
+─────────────────
+  1. Lancer les 3 services (backend, API, frontend)
+  2. Dashboard détecte automatiquement le backend
+  3. Cliquer "Connect Backend"
+  4. Métriques en temps réel
+
+MODE SIMULATEUR (FALLBACK)
+──────────────────────────
+  1. Si backend offline, détection automatique
+  2. Cliquer "Start Demo"
+  3. Données simulées aléatoires
+
+TEST DU CONTEXTE
+────────────────
+  1. Lancer: python backend/match_context_simulator.py
+  2. Appuyer sur [G] (Goal)
+  3. Le threat-score baisse dans le dashboard
+
+
+📊 MÉTRIQUES AFFICHÉES
+═══════════════════════════════════════════════════════════════════════════════
+
+  ┌──────────────────────────────────────────────────────────────┐
+  │  PERSONS                                                     │
+  │  125                                                         │
+  │  [Graphique historique 30 points]                           │
+  └──────────────────────────────────────────────────────────────┘
+
+  ┌──────────────────────────────────────────────────────────────┐
+  │  FALL                                                        │
+  │  Clear / DETECTED!                                           │
+  └──────────────────────────────────────────────────────────────┘
+
+  ┌──────────────────────────────────────────────────────────────┐
+  │  MOTION                                                      │
+  │  Low / Medium / High / Very High                             │
+  └──────────────────────────────────────────────────────────────┘
+
+  ┌──────────────────────────────────────────────────────────────┐
+  │  THREAT                                                      │
+  │  50/100                                                      │
+  │  [Graphique historique 30 points]                           │
+  └──────────────────────────────────────────────────────────────┘
+
+  ┌──────────────────────────────────────────────────────────────┐
+  │  EVENT LOG                                                   │
+  │  [14:32:15] ⚠️ Alert level elevated to MEDIUM              │
+  │  [14:32:10] ✅ Backend API connected                        │
+  │  [14:32:05] ℹ️ System ready                                 │
+  └──────────────────────────────────────────────────────────────┘
+
+
+🔌 ENDPOINTS API
+═══════════════════════════════════════════════════════════════════════════════
+
+  GET http://localhost:5000/api/health
+  ────────────────────────────────────
+  {
+    "status": "ok",
+    "service": "StadiumGuard API",
+    "version": "1.0.0",
+    "timestamp": 1234567890.123
+  }
+
+  GET http://localhost:5000/api/alert
+  ───────────────────────────────────
+  {
+    "timestamp": 1234567890.123,
+    "final_score": 50.4,
+    "level": "MEDIUM",
+    "scores": {
+      "person": 30.0,
+      "fall": 50.0,
+      "motion": 40.0
+    },
+    "match": {
+      "state": "playing",
+      "minute": 67,
+      "score": "2-1",
+      "multiplier": 1.2
+    },
+    "is_stale": false
+  }
+
+
+✅ TESTS DE VALIDATION
+═══════════════════════════════════════════════════════════════════════════════
+
+TEST 1: Vérification installation
+──────────────────────────────────
+  python check_setup.py
+  
+  Attendu: ✅ TOUT EST PRÊT !
+
+TEST 2: Test de l'API
+─────────────────────
+  python test_api.py
+  
+  Attendu: 📊 Résultat: 6/6 tests réussis
+
+TEST 3: Test manuel
+───────────────────
+  curl http://localhost:5000/api/health
+  
+  Attendu: {"status": "ok", ...}
+
+TEST 4: Dashboard connecté
+──────────────────────────
+  1. Ouvrir http://localhost:3101
+  2. Vérifier point vert (System: Operational)
+  3. Cliquer "Connect Backend"
+  4. Métriques se mettent à jour
+
+TEST 5: Simulateur de contexte
+───────────────────────────────
+  1. python backend/match_context_simulator.py
+  2. Appuyer sur [G] (Goal)
+  3. Le threat-score baisse
+
+
+🐛 DÉPANNAGE
+═══════════════════════════════════════════════════════════════════════════════
+
+PROBLÈME: "Backend offline"
+───────────────────────────
+  → Vérifier: python backend/api_server.py tourne
+  → Tester: curl http://localhost:5000/api/health
+
+PROBLÈME: "Port 5000 already in use"
+────────────────────────────────────
+  → Windows: netstat -ano | findstr :5000
+  → Tuer: taskkill /PID <PID> /F
+
+PROBLÈME: "CORS error"
+──────────────────────
+  → Installer: pip install flask-cors
+  → Vérifier: flask-cors dans requirements.txt
+
+PROBLÈME: "Module not found"
+────────────────────────────
+  → Installer: pip install -r backend/requirements.txt
+
+PROBLÈME: Données périmées
+──────────────────────────
+  → Vérifier: python backend/orchestrator.py tourne
+  → Vérifier: Fichiers JSON dans output/
+
+
+📚 DOCUMENTATION
+═══════════════════════════════════════════════════════════════════════════════
+
+  README.md              → Vue d'ensemble avec badges
+  INTEGRATION_GUIDE.md   → Guide complet (architecture, config, etc.)
+  DEMARRAGE_RAPIDE.md    → Guide express (5 minutes)
+  FICHIERS_CREES.md      → Liste des 15 fichiers créés
+  FLUX_DONNEES.txt       → Diagrammes de flux de données
+  RESUME_INTEGRATION.txt → Résumé technique complet
+
+
+🎯 CHECKLIST FINALE
+═══════════════════════════════════════════════════════════════════════════════
+
+  ☐ pip install -r backend/requirements.txt
+  ☐ cd frontend && npm install
+  ☐ python check_setup.py → "TOUT EST PRÊT"
+  ☐ python test_api.py → "6/6 tests réussis"
+  ☐ Backend démarre sans erreur
+  ☐ API accessible sur http://localhost:5000
+  ☐ Frontend accessible sur http://localhost:3101
+  ☐ Dashboard affiche "Backend API connected"
+  ☐ Métriques se mettent à jour en temps réel
+  ☐ Appuyer sur [G] dans simulateur → threat-score baisse
+
+
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                                                                              ║
+║                    ✅ SOLUTION COMPLÈTE LIVRÉE                               ║
+║                                                                              ║
+║              • 15 nouveaux fichiers créés                                    ║
+║              • 2 fichiers modifiés                                           ║
+║              • Documentation complète                                        ║
+║              • Scripts de test et lancement                                  ║
+║              • Architecture production-ready                                 ║
+║                                                                              ║
+║                  Prêt à surveiller votre stade ! 🏟️🇲🇦                       ║
+║                                                                              ║
+║              Consultez DEMARRAGE_RAPIDE.md pour commencer                    ║
+║                                                                              ║
+╚══════════════════════════════════════════════════════════════════════════════╝

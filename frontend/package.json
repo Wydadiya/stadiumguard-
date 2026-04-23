@@ -1,0 +1,47 @@
+{
+  "name": "notika-admin-template",
+  "version": "2.0.0",
+  "description": "Modern Notika Admin Template with Vite 7.x build system",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "lint": "eslint . --ext js,ts,jsx,tsx --report-unused-disable-directives --max-warnings 0",
+    "type-check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@fortawesome/fontawesome-svg-core": "^7.2.0",
+    "@fortawesome/free-solid-svg-icons": "^7.2.0",
+    "@popperjs/core": "^2.11.8",
+    "bootstrap": "^5.3.8",
+    "chart.js": "^4.5.1",
+    "dayjs": "^1.11.19"
+  },
+  "devDependencies": {
+    "@types/node": "^25.2.3",
+    "autoprefixer": "^10.4.24",
+    "cssnano": "^7.1.2",
+    "eslint": "^10.0.0",
+    "postcss": "^8.5.6",
+    "prettier": "^3.8.1",
+    "sass": "^1.97.3",
+    "typescript": "^5.9.3",
+    "vite": "^7.3.1"
+  },
+  "browserslist": [
+    "> 1%",
+    "last 2 versions",
+    "not dead",
+    "not ie 11"
+  ],
+  "keywords": [
+    "admin-template",
+    "dashboard",
+    "bootstrap",
+    "vite",
+    "modern"
+  ],
+  "author": "Notika Template - Modernized",
+  "license": "MIT"
+}

@@ -1,0 +1,18 @@
+# StadiumGuard Backend Requirements
+# Installation: pip install -r requirements.txt
+
+# API Server
+flask>=3.0.0
+flask-cors>=4.0.0
+
+# Computer Vision
+opencv-python>=4.8.0
+ultralytics>=8.0.0
+numpy>=1.24.0
+
+# Testing & Utilities
+requests>=2.31.0
+
+# Optional (pour améliorer les performances)
+# torch>=2.0.0  # Si vous voulez utiliser GPU
+# pillow>=10.0.0

@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="en" class="stadiumguard-app">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>StadiumGuard | AI Stadium Monitoring</title>
+    <meta name="description" content="StadiumGuard — AI stadium monitoring dashboard with live multi-stream analysis (Morocco 2030).">
+
+    <link rel="icon" type="image/svg+xml" href="/logo/notika-icon.svg">
+    <link rel="alternate icon" href="/favicon.ico">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+</head>
+
+<body class="stadiumguard-body">
+    <header class="sg-header">
+        <nav class="sg-nav" aria-label="Primary">
+            <div class="sg-nav-brand">
+                <span class="sg-title">StadiumGuard</span>
+                <span class="sg-subtitle">Morocco 2030</span>
+            </div>
+            <div class="sg-nav-meta">
+                <div class="sg-meta">
+                    <span class="sg-dot" aria-hidden="true"></span>
+                    <span class="sg-meta-label">System</span>
+                    <span id="system-status" class="sg-meta-value">Connecting…</span>
+                </div>
+                <div class="sg-meta">
+                    <span class="sg-meta-label">Alert</span>
+                    <span id="alert-level" class="sg-badge">Normal</span>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main class="sg-main">
+        <!-- ═══ TRIPLE STREAM SECTION ═══ -->
+        <section class="sg-streams-section" aria-label="Live video streams">
+            <div class="sg-streams-header">
+                <h1 class="sg-section-title">
+                    <i class="fa-solid fa-video text-info" aria-hidden="true"></i>
+                    Live Analysis Streams
+                </h1>
+                <div class="sg-stream-controls">
+                    <button id="toggle-streams" class="btn btn-sm btn-outline-success">
+                        <i class="fa-solid fa-play"></i> Connect Streams
+                    </button>
+                </div>
+            </div>
+
+            <div class="sg-streams-grid">
+                <!-- Lab 1: Person Tracking (Main/Large) -->
+                <div class="sg-stream-card sg-stream-card--main" id="stream-card-lab1">
+                    <div class="sg-stream-label">
+                        <span class="sg-stream-dot" id="dot-lab1"></span>
+                        <i class="fa-solid fa-users" aria-hidden="true"></i>
+                        <span>Lab 1 — Person Tracking</span>
+                    </div>
+                    <div class="sg-stream-wrapper" id="stream-wrapper-lab1">
+                        <img id="stream-lab1" class="sg-stream-img" alt="Person Tracking Stream">
+                        <div class="sg-stream-placeholder" id="placeholder-lab1">
+                            <div class="sg-stream-placeholder-icon">
+                                <i class="fa-solid fa-users fa-2x"></i>
+                            </div>
+                            <p>Person Tracking</p>
+                            <span class="sg-stream-placeholder-status">Awaiting connection…</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Lab 2: Fall Detection -->
+                <div class="sg-stream-card" id="stream-card-lab2">
+                    <div class="sg-stream-label">
+                        <span class="sg-stream-dot" id="dot-lab2"></span>
+                        <i class="fa-solid fa-person-falling" aria-hidden="true"></i>
+                        <span>Lab 2 — Fall Detection</span>
+                    </div>
+                    <div class="sg-stream-wrapper" id="stream-wrapper-lab2">
+                        <img id="stream-lab2" class="sg-stream-img" alt="Fall Detection Stream">
+                        <div class="sg-stream-placeholder" id="placeholder-lab2">
+                            <div class="sg-stream-placeholder-icon">
+                                <i class="fa-solid fa-person-falling fa-2x"></i>
+                            </div>
+                            <p>Fall Detection</p>
+                            <span class="sg-stream-placeholder-status">Awaiting connection…</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Lab 3: Motion Classifier -->
+                <div class="sg-stream-card" id="stream-card-lab3">
+                    <div class="sg-stream-label">
+                        <span class="sg-stream-dot" id="dot-lab3"></span>
+                        <i class="fa-solid fa-wave-square" aria-hidden="true"></i>
+                        <span>Lab 3 — Motion Classifier</span>
+                    </div>
+                    <div class="sg-stream-wrapper" id="stream-wrapper-lab3">
+                        <img id="stream-lab3" class="sg-stream-img" alt="Motion Classifier Stream">
+                        <div class="sg-stream-placeholder" id="placeholder-lab3">
+                            <div class="sg-stream-placeholder-icon">
+                                <i class="fa-solid fa-wave-square fa-2x"></i>
+                            </div>
+                            <p>Crowd Motion</p>
+                            <span class="sg-stream-placeholder-status">Awaiting connection…</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ═══ METRICS ROW ═══ -->
+        <div class="row g-3 g-lg-4 mt-1">
+            <div class="col-6 col-lg-3">
+                <section class="sg-card sg-metric" aria-label="Person count" data-bs-toggle="tooltip" data-bs-placement="top" title="Real-time person detection count">
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                        <span class="sg-metric-label mb-0">Persons</span>
+                        <i class="fa-solid fa-users text-info" aria-hidden="true"></i>
+                    </div>
+                    <p id="person-count" class="sg-metric-value sg-metric-value--accent mb-2">0</p>
+                    <canvas id="person-chart" class="sg-mini-chart"></canvas>
+                </section>
+            </div>
+
+            <div class="col-6 col-lg-3">
+                <section class="sg-card sg-metric" aria-label="Fall detection" data-bs-toggle="tooltip" data-bs-placement="top" title="AI-powered fall detection system">
+                    <div class="d-flex align-items-center justify-content-between mb-1">
+                        <span class="sg-metric-label mb-0">Fall</span>
+                        <i class="fa-solid fa-person-falling text-warning" aria-hidden="true"></i>
+                    </div>
+                    <p id="fall-status" class="sg-metric-sub mb-0">Clear</p>
+                </section>
+            </div>
+
+            <div class="col-6 col-lg-3">
+                <section class="sg-card sg-metric" aria-label="Motion level" data-bs-toggle="tooltip" data-bs-placement="top" title="Crowd motion intensity analysis">
+                    <div class="d-flex align-items-center justify-content-between mb-1">
+                        <span class="sg-metric-label mb-0">Motion</span>
+                        <i class="fa-solid fa-wave-square text-info" aria-hidden="true"></i>
+                    </div>
+                    <p id="motion-level" class="sg-metric-value mb-0">Low</p>
+                </section>
+            </div>
+
+            <div class="col-6 col-lg-3">
+                <section class="sg-card sg-metric" aria-label="Audio activity level" data-bs-toggle="tooltip" data-bs-placement="top" title="Microphone-based audio classification">
+                    <div class="d-flex align-items-center justify-content-between mb-1">
+                        <span class="sg-metric-label mb-0">Audio</span>
+                        <i class="fa-solid fa-volume-high text-info" aria-hidden="true"></i>
+                    </div>
+                    <p id="audio-level" class="sg-metric-value mb-0">Unknown</p>
+                    <p id="audio-sync-status" class="sg-metric-sub mb-0">No data</p>
+                </section>
+            </div>
+
+            <div class="col-6 col-lg-3">
+                <section class="sg-card sg-metric" aria-label="Smoke detection status" data-bs-toggle="tooltip" data-bs-placement="top" title="Smoke detection status from backend module">
+                    <div class="d-flex align-items-center justify-content-between mb-1">
+                        <span class="sg-metric-label mb-0">Smoke</span>
+                        <i class="fa-solid fa-smog text-warning" aria-hidden="true"></i>
+                    </div>
+                    <p id="smoke-level" class="sg-metric-value mb-0">Unknown</p>
+                    <p id="smoke-sync-status" class="sg-metric-sub mb-0">No backend data</p>
+                </section>
+            </div>
+
+            <div class="col-6 col-lg-3">
+                <section class="sg-card sg-metric" aria-label="Threat score" data-bs-toggle="tooltip" data-bs-placement="top" title="Composite threat assessment (0-100)">
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                        <span class="sg-metric-label mb-0">Threat</span>
+                        <i class="fa-solid fa-shield-halved text-danger" aria-hidden="true"></i>
+                    </div>
+                    <p id="threat-score" class="sg-metric-value sg-metric-value--threat mb-2">0<span class="sg-metric-suffix">/100</span></p>
+                    <canvas id="threat-chart" class="sg-mini-chart"></canvas>
+                </section>
+            </div>
+        </div>
+
+        <!-- ═══ EVENT LOG ═══ -->
+        <section class="sg-card mt-4" aria-label="Event log">
+            <div class="sg-card-head">
+                <h2 class="sg-card-title mb-0">
+                    <i class="fa-solid fa-list-ul text-info" aria-hidden="true"></i>
+                    Event log
+                </h2>
+                <div class="sg-controls">
+                    <button id="toggle-simulation" class="btn btn-sm btn-outline-success">
+                        <i class="fa-solid fa-play"></i> Start Demo
+                    </button>
+                    <button id="clear-log" class="btn btn-sm btn-outline-secondary ms-2">
+                        <i class="fa-solid fa-trash"></i> Clear
+                    </button>
+                </div>
+            </div>
+            <div id="event-log" class="sg-log">
+                <ul class="list-unstyled mb-0">
+                    <li><span class="text-secondary">[--:--:--]</span> System ready. Click "Connect Streams" to begin.</li>
+                </ul>
+            </div>
+        </section>
+    </main>
+
+    <footer class="sg-footer">
+        Morocco 2030 · StadiumGuard · AI Multi-Stream Analysis Dashboard
+    </footer>
+
+    <script type="module" src="/src/js/main.js"></script>
+</body>
+</html>

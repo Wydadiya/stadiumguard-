@@ -1,0 +1,30 @@
+{
+  "backend": {
+    "api_port": 5000,
+    "output_dir": "output",
+    "cache_ttl_ms": 200,
+    "cors_origins": [
+      "http://localhost:3101",
+      "http://127.0.0.1:3101"
+    ]
+  },
+  "frontend": {
+    "dev_port": 3101,
+    "api_url": "http://localhost:5000",
+    "polling_interval_ms": 500
+  },
+  "orchestrator": {
+    "interval_s": 0.5,
+    "stale_timeout_s": 5.0,
+    "weights": {
+      "person": 0.20,
+      "fall": 0.40,
+      "motion": 0.40
+    },
+    "thresholds": {
+      "low": 30,
+      "medium": 60,
+      "high": 80
+    }
+  }
+}

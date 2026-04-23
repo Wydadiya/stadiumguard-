@@ -1,0 +1,264 @@
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                                                                              ║
+║                    FLUX DE DONNÉES - STADIUMGUARD                            ║
+║                                                                              ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+
+1️⃣ CAPTURE VIDÉO
+═══════════════════════════════════════════════════════════════════════════════
+
+    ┌─────────────┐
+    │   Caméra    │
+    │   (USB/IP)  │
+    └──────┬──────┘
+           │ Frames (30 FPS)
+           ↓
+    ┌─────────────────────────────────────────────────────────────┐
+    │              camera_server.py                               │
+    │  ┌──────────┐  ┌──────────┐  ┌──────────┐                 │
+    │  │  Lab1    │  │  Lab2    │  │  Lab3    │                 │
+    │  │ Person   │  │  Fall    │  │ Motion   │                 │
+    │  │ Tracking │  │Detection │  │Classifier│                 │
+    │  └────┬─────┘  └────┬─────┘  └────┬─────┘                 │
+    └───────┼─────────────┼─────────────┼───────────────────────┘
+            │             │             │
+            │ JSON        │ JSON        │ JSON
+            │ (15 FPS)    │ (15 FPS)    │ (15 FPS)
+            ↓             ↓             ↓
+
+
+2️⃣ ÉCRITURE FICHIERS JSON
+═══════════════════════════════════════════════════════════════════════════════
+
+    ┌─────────────────────────────────────────────────────────────┐
+    │                    output/                                  │
+    │                                                             │
+    │  ┌──────────────────┐  ┌──────────────────┐               │
+    │  │person_score.json │  │ fall_score.json  │               │
+    │  │                  │  │                  │               │
+    │  │ {                │  │ {                │               │
+    │  │   "score": 30,   │  │   "score": 50,   │               │
+    │  │   "confidence":  │  │   "confidence":  │               │
+    │  │   0.85,          │  │   0.92,          │               │
+    │  │   "timestamp":   │  │   "timestamp":   │               │
+    │  │   1234567890     │  │   1234567890     │               │
+    │  │ }                │  │ }                │               │
+    │  └──────────────────┘  └──────────────────┘               │
+    │                                                             │
+    │  ┌──────────────────┐  ┌──────────────────┐               │
+    │  │motion_score.json │  │match_context.json│               │
+    │  │                  │  │                  │               │
+    │  │ {                │  │ {                │               │
+    │  │   "score": 40,   │  │   "multiplier":  │               │
+    │  │   "confidence":  │  │   1.2,           │               │
+    │  │   0.78,          │  │   "state":       │               │
+    │  │   "timestamp":   │  │   "playing",     │               │
+    │  │   1234567890     │  │   "minute": 67   │               │
+    │  │ }                │  │ }                │               │
+    │  └──────────────────┘  └──────────────────┘               │
+    └─────────────────────────────────────────────────────────────┘
+                          │
+                          │ Lecture (0.5s)
+                          ↓
+
+
+3️⃣ FUSION DES SCORES
+═══════════════════════════════════════════════════════════════════════════════
+
+    ┌─────────────────────────────────────────────────────────────┐
+    │              orchestrator.py                                │
+    │                                                             │
+    │  Formule de fusion:                                         │
+    │  ─────────────────                                          │
+    │  raw_vision = person×0.20 + fall×0.40 + motion×0.40        │
+    │  final_score = min(raw_vision × context_mult, 100)         │
+    │                                                             │
+    │  Exemple:                                                   │
+    │  ────────                                                   │
+    │  person=30, fall=50, motion=40, context_mult=1.2           │
+    │  raw_vision = 30×0.20 + 50×0.40 + 40×0.40 = 42             │
+    │  final_score = min(42 × 1.2, 100) = 50.4                   │
+    │                                                             │
+    │  Niveau d'alerte:                                           │
+    │  ────────────────                                           │
+    │  < 30  → LOW                                                │
+    │  < 60  → MEDIUM                                             │
+    │  < 80  → HIGH                                               │
+    │  ≥ 80  → CRITICAL                                           │
+    └─────────────────────────────────────────────────────────────┘
+                          │
+                          │ JSON (0.5s)
+                          ↓
+    ┌─────────────────────────────────────────────────────────────┐
+    │              output/final_alert.json                        │
+    │                                                             │
+    │  {                                                          │
+    │    "timestamp": 1234567890.123,                             │
+    │    "final_score": 50.4,                                     │
+    │    "level": "MEDIUM",                                       │
+    │    "scores": {                                              │
+    │      "person": 30.0,                                        │
+    │      "fall": 50.0,                                          │
+    │      "motion": 40.0                                         │
+    │    },                                                       │
+    │    "match": {                                               │
+    │      "state": "playing",                                    │
+    │      "minute": 67,                                          │
+    │      "score": "2-1",                                        │
+    │      "multiplier": 1.2                                      │
+    │    }                                                        │
+    │  }                                                          │
+    └─────────────────────────────────────────────────────────────┘
+                          │
+                          │ Lecture (200ms)
+                          ↓
+
+
+4️⃣ API REST
+═══════════════════════════════════════════════════════════════════════════════
+
+    ┌─────────────────────────────────────────────────────────────┐
+    │              api_server.py (Flask)                          │
+    │              http://localhost:5000                          │
+    │                                                             │
+    │  Cache en mémoire (TTL: 200ms)                              │
+    │  ┌──────────────────────────────────────┐                  │
+    │  │  alert_data    → final_alert.json    │                  │
+    │  │  person_data   → person_score.json   │                  │
+    │  │  fall_data     → fall_score.json     │                  │
+    │  │  motion_data   → motion_score.json   │                  │
+    │  │  context_data  → match_context.json  │                  │
+    │  └──────────────────────────────────────┘                  │
+    │                                                             │
+    │  Endpoints REST:                                            │
+    │  ───────────────                                            │
+    │  GET /api/health   → {"status": "ok", ...}                 │
+    │  GET /api/alert    → final_alert.json                      │
+    │  GET /api/person   → person_score.json                     │
+    │  GET /api/fall     → fall_score.json                       │
+    │  GET /api/motion   → motion_score.json                     │
+    │  GET /api/context  → match_context.json                    │
+    │                                                             │
+    │  CORS activé pour: http://localhost:3101                   │
+    └─────────────────────────────────────────────────────────────┘
+                          │
+                          │ HTTP GET (500ms)
+                          ↓
+
+
+5️⃣ FRONTEND
+═══════════════════════════════════════════════════════════════════════════════
+
+    ┌─────────────────────────────────────────────────────────────┐
+    │              backend.js (BackendConnector)                  │
+    │                                                             │
+    │  Polling toutes les 500ms:                                  │
+    │  ─────────────────────────                                  │
+    │  fetch('http://localhost:5000/api/alert', {                │
+    │    method: 'GET',                                           │
+    │    mode: 'cors'                                             │
+    │  })                                                         │
+    │  .then(response => response.json())                         │
+    │  .then(data => {                                            │
+    │    // Appeler callback onData(data)                         │
+    │  })                                                         │
+    │  .catch(error => {                                          │
+    │    // Appeler callback onError(error)                       │
+    │  })                                                         │
+    └─────────────────────────────────────────────────────────────┘
+                          │
+                          │ Callback
+                          ↓
+    ┌─────────────────────────────────────────────────────────────┐
+    │              main.js (StadiumGuardApp)                      │
+    │                                                             │
+    │  updateDashboardFromBackend(data) {                         │
+    │    // Mettre à jour #person-count                           │
+    │    // Mettre à jour #threat-score                           │
+    │    // Mettre à jour #fall-status                            │
+    │    // Mettre à jour #motion-level                           │
+    │    // Mettre à jour #alert-level                            │
+    │    // Ajouter événements dans #event-log                    │
+    │    // Mettre à jour les graphiques                          │
+    │  }                                                          │
+    └─────────────────────────────────────────────────────────────┘
+                          │
+                          │ DOM Update
+                          ↓
+    ┌─────────────────────────────────────────────────────────────┐
+    │              index.html (Dashboard)                         │
+    │              http://localhost:3101                          │
+    │                                                             │
+    │  ┌──────────────────────────────────────────────────────┐  │
+    │  │  ┌──────────┐  ┌──────────┐  ┌──────────┐          │  │
+    │  │  │ Persons  │  │   Fall   │  │  Motion  │          │  │
+    │  │  │   125    │  │  Clear   │  │   High   │          │  │
+    │  │  └──────────┘  └──────────┘  └──────────┘          │  │
+    │  │                                                      │  │
+    │  │  ┌──────────────────────────────────────────────┐  │  │
+    │  │  │  Threat Score: 50/100                        │  │  │
+    │  │  │  [████████████████░░░░░░░░░░░░░░░░░░░░░░░░]  │  │  │
+    │  │  └──────────────────────────────────────────────┘  │  │
+    │  │                                                      │  │
+    │  │  Event Log:                                          │  │
+    │  │  ──────────                                          │  │
+    │  │  [14:32:15] ⚠️ Alert level elevated to MEDIUM      │  │
+    │  │  [14:32:10] ✅ Backend API connected                │  │
+    │  │  [14:32:05] ℹ️ System ready                         │  │
+    │  └──────────────────────────────────────────────────────┘  │
+    └─────────────────────────────────────────────────────────────┘
+
+
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                                                                              ║
+║                         TIMING & LATENCE                                     ║
+║                                                                              ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+  Caméra → Labs           : 33ms (30 FPS)
+  Labs → JSON             : 66ms (15 FPS)
+  JSON → Orchestrator     : 500ms (0.5s)
+  Orchestrator → JSON     : 500ms (0.5s)
+  JSON → API Cache        : 200ms (cache TTL)
+  API → Frontend          : 500ms (polling)
+  
+  Latence totale (bout en bout) : ~1.8s
+  
+  Note: La latence peut être réduite en ajustant les intervalles ou en
+        utilisant WebSocket au lieu du polling HTTP.
+
+
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                                                                              ║
+║                    GESTION DES ERREURS                                       ║
+║                                                                              ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+  Scénario 1: Backend arrêté
+  ──────────────────────────
+  Frontend détecte l'erreur → Affiche "Offline" → Bascule sur simulateur
+  
+  Scénario 2: Données périmées
+  ────────────────────────────
+  API vérifie timestamp → Ajoute flag "is_stale": true → Frontend affiche warning
+  
+  Scénario 3: Fichier JSON manquant
+  ──────────────────────────────────
+  API retourne HTTP 503 → Frontend affiche "Service Unavailable"
+  
+  Scénario 4: CORS bloqué
+  ───────────────────────
+  Navigateur bloque requête → Frontend affiche erreur → Vérifier flask-cors
+
+
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                                                                              ║
+║                    FLUX DE DONNÉES COMPLET                                   ║
+║                                                                              ║
+║  Caméra → Labs → JSON → Orchestrator → JSON → API → Frontend → Dashboard    ║
+║   33ms    66ms   500ms     500ms      200ms   500ms    instant              ║
+║                                                                              ║
+║                    Latence totale: ~1.8 secondes                             ║
+║                                                                              ║
+╚══════════════════════════════════════════════════════════════════════════════╝
